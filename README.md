@@ -3,6 +3,20 @@
 Ubuntu and Debian images for ARM based single-board computers
 https://www.armbian.com
 
+## YunoHost notes
+
+The patches in `userpatches` trigger the pre-installation of YunoHost at the end
+of the build to produce images suitable to distribution in the context of the
+YunoHost project. Various tweaks are also applied (e.g. remove some branding of
+'Armbian').
+
+Building-wise, it was found to build correctly with :
+- A 2 GB Digital Ocean VPS running Ubuntu Xenial 16.04 x64
+- debootstrap 1.0.93 (c.f. https://packages.debian.org/buster/all/debootstrap/download )
+- qemu-user-static 2.8 (c.f. https://packages.debian.org/stretch/amd64/qemu-user-static/download )
+
+Then, simply git-clone this repo and run `build-yunohost-images.sh`
+
 ## How to build my own image or kernel?
 
 Supported build environments:
