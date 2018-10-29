@@ -16,6 +16,8 @@ Building-wise, it was found to build correctly with :
 - debootstrap 1.0.93 (c.f. https://packages.debian.org/buster/all/debootstrap/download )
 - qemu-user-static 2.8 (c.f. https://packages.debian.org/stretch/amd64/qemu-user-static/download )
 
+(Also required : `apt install qemu-user qemu-user-binfmt binfmtc binfmt-support psmisc`)
+
 Then, simply git-clone this repo and run `build-yunohost-images.sh`
 
 ## How to build my own image or kernel?
