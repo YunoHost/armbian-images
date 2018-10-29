@@ -24,8 +24,10 @@ compile_armbian-config()
 	Architecture: all
 	Maintainer: $MAINTAINER <$MAINTAINERMAIL>
 	Replaces: armbian-bsp
-	Depends: bash, bc, expect, rcconf, dialog, unzip, build-essential, apt-transport-https
-	Recommends: network-manager, armbian-bsp
+	Depends: bash, iperf3, psmisc, curl, bc, expect, dialog, iptables, resolvconf, \
+	debconf-utils, unzip, build-essential, html2text, apt-transport-https, html2text, dirmngr, software-properties-common
+	Recommends: armbian-bsp
+	Suggests: libpam-google-authenticator, qrencode, network-manager, sunxi-tools
 	Section: utils
 	Priority: optional
 	Description: Armbian configuration utility
@@ -35,6 +37,8 @@ compile_armbian-config()
 	install -m 755 $SRC/cache/sources/armbian-config/debian-config $tmpdir/usr/sbin/armbian-config
 	install -m 644 $SRC/cache/sources/armbian-config/debian-config-jobs $tmpdir/usr/lib/armbian-config/jobs.sh
 	install -m 644 $SRC/cache/sources/armbian-config/debian-config-submenu $tmpdir/usr/lib/armbian-config/submenu.sh
+	install -m 644 $SRC/cache/sources/armbian-config/debian-config-functions $tmpdir/usr/lib/armbian-config/functions.sh
+	install -m 644 $SRC/cache/sources/armbian-config/debian-config-functions-network $tmpdir/usr/lib/armbian-config/functions-network.sh
 	install -m 755 $SRC/cache/sources/armbian-config/softy $tmpdir/usr/sbin/softy
 	# fallback to replace armbian-config in BSP
 	ln -sf /usr/sbin/armbian-config $tmpdir/usr/bin/armbian-config
@@ -49,4 +53,6 @@ if [[ ! -f $DEST/debs/armbian-config_${REVISION}_all.deb ]]; then
 	compile_armbian-config
 fi
 
+# installing additional dependencies here so they are installed only with armbian-config
+chroot $SDCARD /bin/bash -c "apt install -q -y iperf3 debconf-utils html2text dirmngr expect libassuan0 libnpth0 libksba8"
 install_deb_chroot "$DEST/debs/armbian-config_${REVISION}_all.deb"

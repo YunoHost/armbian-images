@@ -40,8 +40,7 @@ backtitle="Armbian building script, http://www.armbian.com | Author: Igor Pecovn
 source $SRC/lib/debootstrap-ng.sh 			# System specific install
 source $SRC/lib/image-helpers.sh			# helpers for OS image building
 source $SRC/lib/distributions.sh 			# System specific install
-source $SRC/lib/desktop.sh 				# Desktop specific install
-source $SRC/lib/desktop-ng.sh 				# Desktop package creation
+source $SRC/lib/desktop.sh 					# Desktop specific install
 source $SRC/lib/compilation.sh 				# Patching and compilation of kernel, uboot, ATF
 source $SRC/lib/makeboarddeb.sh 			# Create board support package
 source $SRC/lib/general.sh				# General functions
@@ -54,16 +53,6 @@ rm -f $DEST/debug/*.log > /dev/null 2>&1
 date +"%d_%m_%Y-%H_%M_%S" > $DEST/debug/timestamp
 # delete compressed logs older than 7 days
 (cd $DEST/debug && find . -name '*.tgz' -mtime +7 -delete) > /dev/null
-
-# Script parameters handling
-for i in "$@"; do
-	if [[ $i == *=* ]]; then
-		parameter=${i%%=*}
-		value=${i##*=}
-		display_alert "Command line: setting $parameter to" "${value:-(empty)}" "info"
-		eval $parameter=$value
-	fi
-done
 
 if [[ $PROGRESS_DISPLAY == none ]]; then
 	OUTPUT_VERYSILENT=yes
@@ -153,10 +142,12 @@ if [[ -z $BOARD ]]; then
 				STATE_DESCRIPTION=' - \Z1(CSC)\Zn - Community Supported Configuration\n - \Z1(WIP)\Zn - Work In Progress\n - \Z1(EOS)\Zn - End Of Support'
 				WIP_STATE=unsupported
 				WIP_BUTTON='supported'
+				EXPERT=yes
 			else
 				STATE_DESCRIPTION=' - Officially supported boards'
 				WIP_STATE=supported
 				WIP_BUTTON='CSC/WIP/EOS'
+				EXPERT=no
 			fi
 			continue
 		elif [[ $STATUS == 0 ]]; then
@@ -186,7 +177,7 @@ if [[ -z $BRANCH ]]; then
 	options=()
 	[[ $KERNEL_TARGET == *default* ]] && options+=("default" "Vendor provided / legacy (3.4.x - 4.4.x)")
 	[[ $KERNEL_TARGET == *next* ]] && options+=("next"       "Mainline (@kernel.org)   (4.x)")
-	[[ $KERNEL_TARGET == *dev* && $EXPERT=yes ]] && options+=("dev"         "\Z1Development version      (4.x)\Zn")
+	[[ $KERNEL_TARGET == *dev* && $EXPERT = yes ]] && options+=("dev"         "\Z1Development version      (4.x)\Zn")
 	# do not display selection dialog if only one kernel branch is available
 	if [[ "${#options[@]}" == 2 ]]; then
 		BRANCH="${options[0]}"
@@ -204,9 +195,10 @@ fi
 
 if [[ $KERNEL_ONLY != yes && -z $RELEASE ]]; then
 	options=()
-	options+=("jessie" "Debian 8 Jessie")
+	[[ $EXPERT = yes ]] && options+=("jessie" "Debian 8 Jessie / unsupported")
 	options+=("stretch" "Debian 9 Stretch")
 	options+=("xenial" "Ubuntu Xenial 16.04 LTS")
+	options+=("bionic" "Ubuntu Bionic 18.04 LTS")
 	RELEASE=$(dialog --stdout --title "Choose a release" --backtitle "$backtitle" --menu "Select the target OS release" \
 		$TTY_Y $TTY_X $(($TTY_Y - 8)) "${options[@]}")
 	unset options
@@ -247,9 +239,11 @@ if [[ $IGNORE_UPDATES != yes ]]; then
 		fetch_from_repo "$ATFSOURCE" "$ATFDIR" "$ATFBRANCH" "yes"
 	fi
 	fetch_from_repo "https://github.com/linux-sunxi/sunxi-tools" "sunxi-tools" "branch:master"
-	fetch_from_repo "https://github.com/rockchip-linux/rkbin" "rkbin-tools" "branch:master"
-	fetch_from_repo "https://github.com/MarvellEmbeddedProcessors/A3700-utils-marvell" "marvell-tools" "branch:A3700_utils-armada-17.10"
+	fetch_from_repo "https://github.com/armbian/rkbin" "rkbin-tools" "branch:master"
+	fetch_from_repo "https://github.com/MarvellEmbeddedProcessors/A3700-utils-marvell" "marvell-tools" "branch:A3700_utils-armada-18.09"
+	fetch_from_repo "https://github.com/MarvellEmbeddedProcessors/mv-ddr-marvell.git" "marvell-ddr" "branch:mv_ddr-armada-18.09"
 	fetch_from_repo "https://github.com/armbian/odroidc2-blobs" "odroidc2-blobs" "branch:master"
+	fetch_from_repo "https://github.com/armbian/testings" "testing-reports" "branch:master"
 fi
 
 if [[ $BETA == yes ]]; then
@@ -274,6 +268,7 @@ DEB_BRANCH=${DEB_BRANCH:+${DEB_BRANCH}-}
 CHOSEN_UBOOT=linux-u-boot-${DEB_BRANCH}${BOARD}
 CHOSEN_KERNEL=linux-image-${DEB_BRANCH}${LINUXFAMILY}
 CHOSEN_ROOTFS=linux-${RELEASE}-root-${DEB_BRANCH}${BOARD}
+CHOSEN_DESKTOP=armbian-${RELEASE}-desktop
 CHOSEN_KSRC=linux-source-${BRANCH}-${LINUXFAMILY}
 
 for option in $(tr ',' ' ' <<< "$CLEAN_LEVEL"); do
@@ -299,11 +294,13 @@ overlayfs_wrapper "cleanup"
 VER=$(dpkg --info $DEST/debs/${CHOSEN_KERNEL}_${REVISION}_${ARCH}.deb | grep Descr | awk '{print $(NF)}')
 VER="${VER/-$LINUXFAMILY/}"
 
+UBOOT_VER=$(dpkg --info $DEST/debs/${CHOSEN_UBOOT}_${REVISION}_${ARCH}.deb | grep Descr | awk '{print $(NF)}')
+
 # create board support package
 [[ -n $RELEASE && ! -f $DEST/debs/$RELEASE/${CHOSEN_ROOTFS}_${REVISION}_${ARCH}.deb ]] && create_board_package
 
 # create desktop package
-[[ -n $RELEASE && ! -f $DEST/debs/$RELEASE/armbian-desktop-${RELEASE}_${REVISION}_all.deb ]] && create_desktop_package
+[[ -n $RELEASE && ! -f $DEST/debs/$RELEASE/${CHOSEN_DESKTOP}_${REVISION}_all.deb ]] && create_desktop_package
 
 # build additional packages
 [[ $EXTERNAL_NEW == compile ]] && chroot_build_packages

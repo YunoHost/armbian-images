@@ -16,9 +16,3 @@ DESKTOP_TARGET="stretch:next"
 #
 CLI_BETA_TARGET=""
 DESKTOP_BETA_TARGET=""
-#
-BOARDRATING=""
-CHIP="http://docs.armbian.com/Hardware_Allwinner-H3/"
-HARDWARE="http://linux-sunxi.org/Sunvell_R69"
-FORUMS="http://forum.armbian.com/index.php/forum/13-allwinner-h3/"
-
