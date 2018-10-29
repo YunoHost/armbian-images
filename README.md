@@ -15,8 +15,9 @@ Building-wise, it was found to build correctly with :
 - A 2 GB Digital Ocean VPS running Ubuntu Xenial 16.04 x64
 - debootstrap 1.0.93 (c.f. https://packages.debian.org/buster/all/debootstrap/download )
 - qemu-user-static 2.8 (c.f. https://packages.debian.org/stretch/amd64/qemu-user-static/download )
+- qemu-user 2.8 (c.f. https://packages.debian.org/stretch/amd64/qemu-user/download )
 
-(Also required : `apt install qemu-user qemu-user-binfmt binfmtc binfmt-support psmisc`)
+(Also required : `apt install qemu-user-binfmt binfmtc binfmt-support psmisc`)
 
 Then, simply git-clone this repo and run `build-yunohost-images.sh`
 
