@@ -139,7 +139,7 @@ PACKAGE_LIST="bc bridge-utils build-essential cpufrequtils device-tree-compiler 
 PACKAGE_LIST_ADDITIONAL="armbian-firmware alsa-utils btrfs-tools dosfstools iotop iozone3 stress sysbench screen \
 	ntfs-3g vim pciutils evtest htop pv lsof libfuse2 libdigest-sha-perl \
 	libproc-processtable-perl aptitude dnsutils f3 haveged hdparm rfkill vlan sysstat bash-completion \
-	hostapd git ethtool network-manager unzip ifenslave command-not-found libpam-systemd iperf3 \
+	hostapd git ethtool unzip ifenslave command-not-found libpam-systemd iperf3 \
 	software-properties-common libnss-myhostname f2fs-tools avahi-autoipd iputils-arping qrencode"
 
 
