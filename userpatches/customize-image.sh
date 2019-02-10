@@ -31,6 +31,10 @@ EOF
 echo "auto eth0" > /etc/network/interfaces.d/eth0.conf
 echo "iface eth0 inet dhcp" >> /etc/network/interfaces.d/eth0.conf
 
+# Make sure resolv.conf points to DNSmasq (somehow networkmanager might have broke this)
+rm /etc/resolv.conf
+ln -s /etc/resolvconf/run/resolv.conf /etc/resolv.conf
+
 # Backports are evil
 sed -i '/backport/ s/^deb/#deb/' /etc/apt/sources.list
 
